@@ -11,7 +11,14 @@ import { messages } from './messages';
 export type Guess = {
   user: string;
   guess: [number, number];
+  timestamp?: string;
 }
+
+const getGuessTimestamp = () => new Date().toLocaleTimeString('en-US', {
+  timeZone: 'America/New_York',
+  hour: '2-digit',
+  minute: '2-digit'
+});
 
 const client = new Client({
   intents: [
@@ -28,8 +35,13 @@ client.on('ready', (c) => {
 client.on('messageCreate', (message) => {
   if (message.author.bot) return;
 
-  switch (message.content) {
-    case 'guess list':
+  // TEMP TEMP TEMP ONLY FOR TESTING!!!!
+  const [ firstWordOfMessage ] = message.content.split(' ')
+  message.author.username = firstWordOfMessage;
+  // ------------------------------
+
+  switch (true) {
+    case message.content.toLowerCase().includes('who guessed what'):
       handleGuessListRequest(message);
       break;
     default:
@@ -62,8 +74,9 @@ const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message
 }
 
 const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
+
   // tests to see if the message contains two numbers inside square brackets
-  const guessPattern = /.*\[(\d+),\s*(\d+)\].*/;
+  const guessPattern = /.*\[\s*(-?\d+),\s*(-?\d+)\s*\].*/;
   const guess = message.content.match(guessPattern);
 
   if (!guess) return;
@@ -73,6 +86,21 @@ const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>)
   const guessData: Guess = {
     user: message.author.username,
     guess: [parseInt(num1), parseInt(num2)]
+  }
+
+  if (guessData.guess[0] < 0 || guessData.guess[1] < 0) {
+    message.reply(messages.NEGATIVE_ELO_GUESS);
+    return
+  }
+
+  if (guessData.guess[0] < 100 || guessData.guess[1] < 100) {
+    message.reply(messages.STUPID_GUESS(guessData));
+    return
+  }
+
+  if (guessData.guess[0] > 3500 || guessData.guess[1] > 3500) {
+    message.reply(messages.STUPID_GUESS(guessData));
+    return
   }
 
   try {
@@ -109,7 +137,7 @@ const enterGuess = async (guess: Guess) => {
     return
   }
   const sheet = new GoogleSheet(accessToken);
-  const guessArray = [guess.user, guess.guess[0], guess.guess[1], new Date().toLocaleTimeString()];
+  const guessArray = [guess.user, guess.guess[0], guess.guess[1], getGuessTimestamp()];
   const sheetRow = guessArray.map((guess) => guess.toString());
   try {
     await sheet.postInRange(GUESS_TARGET_SHEET_RANGE, [sheetRow]);
@@ -138,7 +166,8 @@ const getGuesses = async (): Promise<Guess[]> => {
     return data.slice(1).map((row) => {
       return {
         user: row[0],
-        guess: [parseInt(row[1]), parseInt(row[2])]
+        guess: [parseInt(row[1]), parseInt(row[2])],
+        timestamp: row[3]
       }
     });
 
@@ -155,7 +184,7 @@ const updateGuess = async (row: number, guess: Guess) => {
     return
   }
   const sheet = new GoogleSheet(accessToken);
-  const guessArray = [guess.user, guess.guess[0], guess.guess[1], new Date().toLocaleTimeString()];
+  const guessArray = [guess.user, guess.guess[0], guess.guess[1], getGuessTimestamp()];
   const sheetRow = guessArray.map((guess) => guess.toString());
   try {
     await sheet.updateByRow(GUESS_TARGET_SHEET_RANGE, row, [sheetRow]);
