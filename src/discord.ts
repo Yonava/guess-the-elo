@@ -4,7 +4,7 @@ import {
   type OmitPartialGroupDMChannel,
   type Message
 } from 'discord.js';
-import { getGoogleOAuthAccessToken } from './constants';
+import { getGoogleOAuthAccessToken, AUTH_ERRORS } from './constants';
 import GoogleSheet from './sheets';
 
 type Guess = {
@@ -41,7 +41,7 @@ client.on('messageCreate', (message) => {
 
 const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
   if (!guesses.length) {
-    message.reply('No guesses have been made yet');
+    message.reply('No guesses have been made yet!');
     return;
   }
 
@@ -52,6 +52,17 @@ const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message
   message.reply(guessList);
 }
 
+const getGuessRecordedMessage = (guess: Guess) => {
+  const responses = [
+    `you guessed ${guess.guess[0]} and ${guess.guess[1]}!`,
+    `your guess of ${guess.guess[0]} and ${guess.guess[1]} has been recorded!`,
+    `thanks for guessing ${guess.guess[0]} and ${guess.guess[1]}!`,
+    `${guess.guess[0]} ${guess.guess[1]}, copy that!`,
+    `${guess.guess[0]} and ${guess.guess[1]}, loud and clear!`,
+  ];
+  return responses[Math.floor(Math.random() * responses.length)];
+}
+
 const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
   // tests to see if the message contains two numbers inside square brackets
   const guessPattern = /.*\[(\d+),\s*(\d+)\].*/;
@@ -60,12 +71,34 @@ const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>)
   if (!guess) return;
 
   const [_, num1, num2] = guess;
-  guesses.push({
+
+  const guessData: Guess = {
     user: message.author.username,
     guess: [parseInt(num1), parseInt(num2)]
-  });
+  }
 
-  message.reply(`Your guess of ${num1} and ${num2} has been recorded, good luck!`);
+  try {
+    await enterGuess(guessData);
+  } catch (error) {
+    console.error('Error entering guess:', error);
+    message.reply('There was an error entering your guess, please try again later');
+    return;
+  }
+
+  const confirmationMessage = getGuessRecordedMessage(guessData);
+  message.reply(confirmationMessage);
+}
+
+const enterGuess = async (guess: Guess) => {
+  const accessToken = await getGoogleOAuthAccessToken();
+  if (!accessToken) {
+    console.error(AUTH_ERRORS.INVALID_GOOGLE_OAUTH_ACCESS_TOKEN, 'No access token found');
+    return
+  }
+  const sheet = new GoogleSheet(accessToken);
+  const guessToArray = [guess.user, guess.guess[0], guess.guess[1], new Date().toLocaleTimeString()];
+  const sheetRow = guessToArray.map((guess) => guess.toString());
+  await sheet.postInRange('Sheet1', [sheetRow]);
 }
 
 client.login(process.env.DISCORD_TOKEN);

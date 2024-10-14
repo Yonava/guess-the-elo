@@ -75,7 +75,7 @@ async function generateGoogleOAuthAccessToken(googleOAuthRefreshToken: string) {
   }
 }
 
-const getGoogleOAuthAccessToken = generateGoogleOAuthAccessToken(process.env.GOOGLE_OAUTH_REFRESH_TOKEN!);
+const getGoogleOAuthAccessToken = () => generateGoogleOAuthAccessToken(process.env.GOOGLE_OAUTH_REFRESH_TOKEN!);
 
 export {
   AUTH_ERRORS,
