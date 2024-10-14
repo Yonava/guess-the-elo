@@ -19,7 +19,7 @@ const getGuessRecordedMessage = (guess: Guess) => {
     `${num1} and ${num2}! Got it!`,
     `${num1} and ${num2}? I wouldn't have guessed that high, but I have recorded it!`,
     `scribbled down on my tattered piece of notebook paper! (${num1} and ${num2})`,
-    `thanks ${guess.user}! (${num1} and ${num2}) ` + gifs.NOTEBOOK_PENGUIN,
+    `thanks ${guess.user}! (${num1} and ${num2}) ${gifs.NOTEBOOK_PENGUIN}`,
   ];
   return getRandom(responses);
 }
@@ -50,7 +50,7 @@ const getStupidGuessMessage = (guess: Guess) => {
     'Im going to pretend I didnt see that',
     'Come back when you have a real guess',
     'You arent even trying',
-    'Do you need a new keyboard? https://www.amazon.com/keyboard/s?k=keyboard',
+    'Do you need a new keyboard? https://www.amazon.com/AmazonBasics-Matte-Keyboard-QWERTY-Layout/dp/B07WJ5D3H4/',
     gifs.BLINKING_GUY,
     gifs.WUT_GIRL,
   ];
