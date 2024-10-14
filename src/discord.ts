@@ -1,4 +1,11 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import {
+  Client,
+  GatewayIntentBits,
+  type OmitPartialGroupDMChannel,
+  type Message
+} from 'discord.js';
+import { getGoogleOAuthAccessToken } from './constants';
+import GoogleSheet from './sheets';
 
 type Guess = {
   user: string;
@@ -22,34 +29,43 @@ client.on('ready', (c) => {
 client.on('messageCreate', (message) => {
   if (message.author.bot) return;
 
-  if (message.content === 'what are the guesses') {
+  switch (message.content) {
+    case 'guess list':
+      handleGuessListRequest(message);
+      break;
+    default:
+      handleGuess(message);
+      break;
+  }
+});
 
-    if (!guesses.length) {
-      message.reply('No guesses have been made yet');
-      return;
-    }
-
-    const guessList = guesses
-      .map(({ user, guess }) => `${user} guessed ${guess[0]} and ${guess[1]}`)
-      .join('\n');
-    message.reply(guessList);
+const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
+  if (!guesses.length) {
+    message.reply('No guesses have been made yet');
     return;
   }
 
-  // tests to see if the message contains two numbers inside square brackets
-  const regex = /.*\[(\d+),\s*(\d+)\].*/;
-  const guess = message.content.match(regex);
+  const guessList = guesses
+    .map(({ user, guess }) => `${user} guessed ${guess[0]} and ${guess[1]}`)
+    .join('\n');
 
-  if (guess) {
-    const [_, num1, num2] = guess;
-    guesses.push({
-      user: message.author.username,
-      guess: [parseInt(num1), parseInt(num2)]
-    });
-    message.reply(`Your guess of ${num1} and ${num2} has been recorded, good luck!`);
-  } else {
-    message.reply('that does not look like a guess to me');
-  }
-});
+  message.reply(guessList);
+}
+
+const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
+  // tests to see if the message contains two numbers inside square brackets
+  const guessPattern = /.*\[(\d+),\s*(\d+)\].*/;
+  const guess = message.content.match(guessPattern);
+
+  if (!guess) return;
+
+  const [_, num1, num2] = guess;
+  guesses.push({
+    user: message.author.username,
+    guess: [parseInt(num1), parseInt(num2)]
+  });
+
+  message.reply(`Your guess of ${num1} and ${num2} has been recorded, good luck!`);
+}
 
 client.login(process.env.DISCORD_TOKEN);

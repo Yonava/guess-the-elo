@@ -57,10 +57,31 @@ const authClient = () => new google.auth.OAuth2(
   redirectUri
 )
 
+/**
+  * @param {string} googleOAuthRefreshToken
+  * @description takes in a google oauth refresh token and returns a google oauth access token
+  * @returns {Promise<string>} a promise that resolves with a google oauth access token
+  * @throws {Error} if the google oauth refresh token is invalid
+*/
+async function generateGoogleOAuthAccessToken(googleOAuthRefreshToken: string) {
+  const auth = authClient();
+
+  try {
+    auth.setCredentials({ refresh_token: googleOAuthRefreshToken });
+    const tokens  = await auth.refreshAccessToken();
+    return tokens.credentials.access_token;
+  } catch (e) {
+    throw AUTH_ERRORS.INVALID_GOOGLE_OAUTH_REFRESH_TOKEN;
+  }
+}
+
+const getGoogleOAuthAccessToken = generateGoogleOAuthAccessToken(process.env.GOOGLE_OAUTH_REFRESH_TOKEN!);
+
 export {
   AUTH_ERRORS,
   redirectUri,
   googleOAuthScope,
   spreadsheetIds,
-  authClient
+  authClient,
+  getGoogleOAuthAccessToken,
 }
