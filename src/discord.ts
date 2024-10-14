@@ -6,8 +6,9 @@ import {
 } from 'discord.js';
 import { getGoogleOAuthAccessToken, AUTH_ERRORS, GUESS_TARGET_SHEET_RANGE } from './constants';
 import GoogleSheet from './sheets';
+import { messages } from './messages';
 
-type Guess = {
+export type Guess = {
   user: string;
   guess: [number, number];
 }
@@ -44,32 +45,20 @@ const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message
     guesses = await getGuesses();
   } catch (error) {
     console.error('Error getting guesses:', error);
-    message.reply('There was an error getting the guesses, please try again later');
+    message.reply(messages.ERROR_GETTING_GUESSES);
     return;
   }
 
   if (!guesses.length) {
-    message.reply('No guesses have been made yet');
+    message.reply(messages.NO_GUESSES);
     return;
   }
 
   const guessList = guesses
-    .map(({ user, guess }) => `${user} guessed ${guess[0]} and ${guess[1]}`)
+    .map((g) => messages.GUESS_TO_STRING(g))
     .join('\n');
 
   message.reply(guessList);
-}
-
-const getGuessRecordedMessage = (guess: Guess) => {
-  const [num1, num2] = guess.guess;
-  const responses = [
-    `you guessed ${num1} and ${num2}!`,
-    `your guess of ${num1} and ${num2} has been recorded!`,
-    `thanks for guessing ${num1} and ${num2}!`,
-    `${num1} ${num2}, copy that!`,
-    `${num1} and ${num2}, loud and clear!`,
-  ];
-  return responses[Math.floor(Math.random() * responses.length)];
 }
 
 const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
@@ -88,14 +77,16 @@ const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>)
 
   try {
     const guesses = await getGuesses();
-    const existingGuess = guesses.find((g) => g.user === guessData.user);
-    if (existingGuess) {
-      message.reply(`You have already made a guess! But I have updated your guess to ${num1} and ${num2}`);
+    const existingGuessIndex = guesses.findIndex((g) => g.user === guessData.user);
+    if (existingGuessIndex !== -1) {
+      message.reply(messages.GUESS_ALREADY_MADE(guessData));
+      // 1 for 0 index, 1 for header row = 2
+      await updateGuess(existingGuessIndex + 2, guessData);
       return;
     }
   } catch (error) {
     console.error('Error getting guesses:', error);
-    message.reply('There was an error taking your guess, please try again later');
+    message.reply(messages.ERROR_RECORDING_GUESS);
     return;
   }
 
@@ -103,11 +94,11 @@ const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>)
     await enterGuess(guessData);
   } catch (error) {
     console.error('Error entering guess:', error);
-    message.reply('There was an error entering your guess, please try again later');
+    message.reply(messages.ERROR_RECORDING_GUESS);
     return;
   }
 
-  const confirmationMessage = getGuessRecordedMessage(guessData);
+  const confirmationMessage = messages.GUESS_RECORDED(guessData);
   message.reply(confirmationMessage);
 }
 
@@ -153,6 +144,23 @@ const getGuesses = async (): Promise<Guess[]> => {
 
   } catch (error) {
     console.error('Error getting guesses:', error);
+    throw error;
+  }
+}
+
+const updateGuess = async (row: number, guess: Guess) => {
+  const accessToken = await getGoogleOAuthAccessToken();
+  if (!accessToken) {
+    console.error(AUTH_ERRORS.INVALID_GOOGLE_OAUTH_ACCESS_TOKEN, 'No access token found');
+    return
+  }
+  const sheet = new GoogleSheet(accessToken);
+  const guessArray = [guess.user, guess.guess[0], guess.guess[1], new Date().toLocaleTimeString()];
+  const sheetRow = guessArray.map((guess) => guess.toString());
+  try {
+    await sheet.updateByRow(GUESS_TARGET_SHEET_RANGE, row, [sheetRow]);
+  } catch (error) {
+    console.error('Error updating guess:', error);
     throw error;
   }
 }
