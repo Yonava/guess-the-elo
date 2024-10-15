@@ -68,4 +68,6 @@ export const messages = {
   GUESS_ALREADY_MADE: (guess: Guess) => getGuessAlreadyMadeMessage(guess),
   NEGATIVE_ELO_GUESS: 'You are supposed to submit their elo, not yours!',
   STUPID_GUESS: (guess: Guess) => getStupidGuessMessage(guess),
+  GUESS_RESET_ERROR: 'There was an error resetting the guesses, please try again later',
+  GUESS_RESET_SUCCESS: 'Guesses have been reset!',
 } as const;

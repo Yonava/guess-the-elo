@@ -40,15 +40,32 @@ client.on('messageCreate', (message) => {
   // message.author.username = firstWordOfMessage;
   // ------------------------------
 
+  const messageContent = message.content.toLowerCase();
+
   switch (true) {
-    case message.content.toLowerCase().includes('who guessed what'):
+    case messageContent.includes('who guessed what'):
       handleGuessListRequest(message);
+      break;
+    case messageContent.includes('reset guesses'):
+      handleResetGuesses(message);
       break;
     default:
       handleGuess(message);
       break;
   }
 });
+
+const handleResetGuesses = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
+  try {
+    await resetGuesses();
+  } catch (error) {
+    console.error('Error resetting guesses:', error);
+    message.reply(messages.ERROR_RECORDING_GUESS);
+    return;
+  }
+
+  message.reply(messages.GUESS_RESET_SUCCESS);
+}
 
 const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
 
@@ -190,6 +207,25 @@ const updateGuess = async (row: number, guess: Guess) => {
     await sheet.updateByRow(GUESS_TARGET_SHEET_RANGE, row, [sheetRow]);
   } catch (error) {
     console.error('Error updating guess:', error);
+    throw error;
+  }
+}
+
+const resetGuesses = async () => {
+  const accessToken = await getGoogleOAuthAccessToken();
+  if (!accessToken) {
+    console.error(AUTH_ERRORS.INVALID_GOOGLE_OAUTH_ACCESS_TOKEN, 'No access token found');
+    return
+  }
+
+  const sheet = new GoogleSheet(accessToken);
+  try {
+    const rows = await sheet.getRange(GUESS_TARGET_SHEET_RANGE);
+    if (!rows || !rows[0]) throw new Error('No rows found');
+    const [headerRow] = rows;
+    await sheet.replaceRange(GUESS_TARGET_SHEET_RANGE, [headerRow]);
+  } catch (error) {
+    console.error('Error resetting guesses:', error);
     throw error;
   }
 }
