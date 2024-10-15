@@ -155,9 +155,8 @@ const enterGuess = async (guess: Guess) => {
   }
   const sheet = new GoogleSheet(accessToken);
   const guessArray = [guess.user, guess.guess[0], guess.guess[1], getGuessTimestamp()];
-  const sheetRow = guessArray.map((guess) => guess.toString());
   try {
-    await sheet.postInRange(GUESS_TARGET_SHEET_RANGE, [sheetRow]);
+    await sheet.postInRange(GUESS_TARGET_SHEET_RANGE, [guessArray]);
   } catch (error) {
     console.error('Error entering guess:', error);
     throw error;
@@ -202,9 +201,8 @@ const updateGuess = async (row: number, guess: Guess) => {
   }
   const sheet = new GoogleSheet(accessToken);
   const guessArray = [guess.user, guess.guess[0], guess.guess[1], getGuessTimestamp()];
-  const sheetRow = guessArray.map((guess) => guess.toString());
   try {
-    await sheet.updateByRow(GUESS_TARGET_SHEET_RANGE, row, [sheetRow]);
+    await sheet.updateByRow(GUESS_TARGET_SHEET_RANGE, row, [guessArray]);
   } catch (error) {
     console.error('Error updating guess:', error);
     throw error;

@@ -1,11 +1,13 @@
 import { google } from 'googleapis';
 import { authClient, spreadsheetIds, AUTH_ERRORS } from './constants';
 
+type SheetData = string | number;
+
 export default class GoogleSheet {
   spreadsheetId;
   sheets;
 
-  writable(range: string, data: string[][]) {
+  writable(range: string, data: SheetData[][]) {
     return {
       spreadsheetId: this.spreadsheetId,
       range,
@@ -59,13 +61,13 @@ export default class GoogleSheet {
     });
   }
 
-  async updateByRow(range: string, row: number, data: string[][]) {
+  async updateByRow(range: string, row: number, data: SheetData[][]) {
     await this.sheets.spreadsheets.values.update(
       this.writable(`${range}!A${row}:Z${row}`, data)
     );
   }
 
-  async postInRange(range: string, data: string[][]) {
+  async postInRange(range: string, data: SheetData[][]) {
     const rangeData = await this.getRange(range);
 
     if (!rangeData) {
@@ -92,7 +94,7 @@ export default class GoogleSheet {
     return insertRow;
   }
 
-  async replaceRange(range: string, data: string[][]) {
+  async replaceRange(range: string, data: SheetData[][]) {
     await this.sheets.spreadsheets.values.clear({
       spreadsheetId: this.spreadsheetId,
       range,
