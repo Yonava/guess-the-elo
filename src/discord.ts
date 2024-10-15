@@ -36,8 +36,8 @@ client.on('messageCreate', (message) => {
   if (message.author.bot) return;
 
   // TEMP TEMP TEMP ONLY FOR TESTING!!!!
-  const [ firstWordOfMessage ] = message.content.split(' ')
-  message.author.username = firstWordOfMessage;
+  // const [ firstWordOfMessage ] = message.content.split(' ')
+  // message.author.username = firstWordOfMessage;
   // ------------------------------
 
   switch (true) {

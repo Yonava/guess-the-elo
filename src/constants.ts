@@ -53,7 +53,7 @@ const googleOAuthScope = [
 */
 const spreadsheetIds = {
   dev: '1gKTFBN9lITCEyPKDWG31_yya-x3R3IRe6VH3Qa3sk1A',
-  production: '',
+  production: '1gKTFBN9lITCEyPKDWG31_yya-x3R3IRe6VH3Qa3sk1A',
 }
 
 const authClient = () => new google.auth.OAuth2(

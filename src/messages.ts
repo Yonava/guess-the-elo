@@ -5,7 +5,9 @@ const getRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)
 export const gifs = {
   BLINKING_GUY: 'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif?cid=790b7611po35danhlmyst3v0chjpd6ceycng2dvubr835ys1&ep=v1_gifs_search&rid=giphy.gif&ct=g',
   WUT_GIRL: 'https://media.giphy.com/media/kaq6GnxDlJaBq/giphy.gif?cid=790b76110dxbymnew3r6ku1lma76iathb413py3b5pz17fam&ep=v1_gifs_search&rid=giphy.gif&ct=g',
-  NOTEBOOK_PENGUIN: 'https://media.giphy.com/media/LWGj0VBaxWONkMLt61/giphy.gif?cid=790b7611c6tk0ru3aaniccwujm5535vbaz14axfmr9q8g75l&ep=v1_gifs_search&rid=giphy.gif&ct=g'
+  NOTEBOOK_PENGUIN: 'https://media.giphy.com/media/LWGj0VBaxWONkMLt61/giphy.gif?cid=790b7611c6tk0ru3aaniccwujm5535vbaz14axfmr9q8g75l&ep=v1_gifs_search&rid=giphy.gif&ct=g',
+  INFINITE_CHESS_BOARD: 'https://media.giphy.com/media/ms3yqSf67KQjnXm6kN/giphy.gif?cid=790b7611ecezl3x57v8ypkwp3wfre3sxp2xmlqj47zuv8zao&ep=v1_gifs_search&rid=giphy.gif&ct=g',
+  PETS_PLAYING_CHESS: 'https://media.giphy.com/media/XxMTS8OOwl59C/giphy.gif?cid=790b7611ecezl3x57v8ypkwp3wfre3sxp2xmlqj47zuv8zao&ep=v1_gifs_search&rid=giphy.gif&ct=g',
 }
 
 const getGuessRecordedMessage = (guess: Guess) => {
