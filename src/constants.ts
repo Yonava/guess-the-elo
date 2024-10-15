@@ -9,7 +9,7 @@ import { google } from 'googleapis';
 /*
   * the target range for posting and pulling guess the elo guesses
 */
-const GUESS_TARGET_SHEET_RANGE = 'Sheet1'
+const GUESS_TARGET_SHEET_RANGE = 'test'
 
 const localUri = 'http://localhost:3000/auth';
 const prodUri = '';

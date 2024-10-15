@@ -228,4 +228,24 @@ const resetGuesses = async () => {
   }
 }
 
+const sortGuesses = async () => {
+  const accessToken = await getGoogleOAuthAccessToken();
+  if (!accessToken) {
+    console.error(AUTH_ERRORS.INVALID_GOOGLE_OAUTH_ACCESS_TOKEN, 'No access token found');
+    return
+  }
+
+  const sheet = new GoogleSheet(accessToken);
+  // get the data from the sheet
+  const data = await sheet.getRange(GUESS_TARGET_SHEET_RANGE) as string[][] | undefined;
+  if (!data) return;
+
+  const [headerRow, ...dataRows] = data;
+
+  // =(MAX(0,(500-ABS(E2-C2)))+MAX(0,500-ABS(B2-D2)))
+  const getScore = (row: (string | number)[]) => {
+    const [user, guess1, guess2, timestamp] = row;
+  }
+}
+
 client.login(process.env.DISCORD_TOKEN);
