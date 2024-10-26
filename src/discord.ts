@@ -49,6 +49,9 @@ client.on('messageCreate', (message) => {
     case messageContent.includes('reset guesses'):
       handleResetGuesses(message);
       break;
+    case messageContent.includes('my guess'):
+      handleGuessForUser(message, message.author.username);
+      break;
     default:
       handleGuess(message);
       break;
@@ -88,6 +91,28 @@ const handleGuessListRequest = async (message: OmitPartialGroupDMChannel<Message
     .join('\n');
 
   message.reply(guessList);
+}
+
+const handleGuessForUser = async (message: OmitPartialGroupDMChannel<Message<boolean>>, user: string) => {
+  let guesses: Guess[] = [];
+  try {
+    guesses = await getGuesses();
+  } catch (error) {
+    console.error('Error getting guesses:', error);
+    message.reply(messages.ERROR_GETTING_GUESSES);
+    return;
+  }
+
+  const youOrUser = message.author.username === user ? 'You haven\'t' : `${user} hasn't`
+  const msg = `${youOrUser} guessed yet!`;
+
+  const userGuess = guesses.find((g) => g.user === user);
+  if (!userGuess) {
+    message.reply(msg);
+    return;
+  }
+
+  message.reply(messages.GUESS_TO_STRING(userGuess));
 }
 
 const handleGuess = async (message: OmitPartialGroupDMChannel<Message<boolean>>) => {
