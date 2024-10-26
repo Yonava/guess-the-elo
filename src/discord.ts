@@ -49,8 +49,11 @@ client.on('messageCreate', (message) => {
     case messageContent.includes('reset guesses'):
       handleResetGuesses(message);
       break;
-    case messageContent.includes('my guess'):
-      handleGuessForUser(message, message.author.username);
+    case messageContent.includes('guess'):
+      const [user, guess, ...rest] = messageContent.toLowerCase().split(' ');
+      if (guess !== 'guess' || rest.length < 1) return;
+      else if (user === 'my') handleGuessForUser(message, message.author.username);
+      else handleGuessForUser(message, user.slice(0, -1));
       break;
     default:
       handleGuess(message);
