@@ -40,7 +40,7 @@ client.on('messageCreate', (message) => {
   // message.author.username = firstWordOfMessage;
   // ------------------------------
 
-  const messageContent = message.content.toLowerCase();
+  const messageContent = message.content.toLowerCase().trim();
 
   switch (true) {
     case messageContent.includes('who guessed what'):
@@ -50,8 +50,8 @@ client.on('messageCreate', (message) => {
       handleResetGuesses(message);
       break;
     case messageContent.includes('guess'):
-      const [user, guess, ...rest] = messageContent.toLowerCase().split(' ');
-      if (guess !== 'guess' || rest.length < 1) return;
+      const [user, guess, ...rest] = messageContent.split(' ');
+      if (guess !== 'guess' || rest.length > 0) return;
       else if (user === 'my') handleGuessForUser(message, message.author.username);
       else handleGuessForUser(message, user.slice(0, -1));
       break;
